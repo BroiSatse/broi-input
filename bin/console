@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'broi/input'
+require 'pry'
+
+class MyInput < Broi::Input
+  attribute :a
+
+  validate do
+    required(:a).maybe(:int?)
+  end
+end
+
+Pry.start
