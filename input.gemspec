@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = 'broi-input'
-  spec.version       = '0.1.0'
+  spec.version       = '0.1.1'
   spec.authors       = ['broisatse']
   spec.email         = ['sklajn@gmail.com']
 
@@ -22,11 +22,12 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'dry-validation', '~> 0.12'
   spec.add_dependency 'dry-struct', '~> 0.5'
-  spec.add_dependency 'dry-transaction', '~> 0.13'
+  spec.add_dependency 'dry-monads', '~> 1.0'
 
 
   spec.add_development_dependency 'bundler', '~> 1.16'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'pry', '~> 0.11'
+  spec.add_development_dependency 'byebug'
 end
