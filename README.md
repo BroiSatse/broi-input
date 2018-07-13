@@ -1,43 +1,70 @@
-# Input
+# Broi::Input
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/input`. To experiment with that code, run `bin/console` for an interactive prompt.
+This library provides flexible API to deal with incoming ruby messages. It converts incoming hash onto predefined, structured object by passing it through predefined input validations.
 
-TODO: Delete this and the text above, and describe your gem
-
-## Installation
-
-Add this line to your application's Gemfile:
+Example:
 
 ```ruby
-gem 'input'
+class PurchaseInput < Broi::Input
+  attribute :product
+  attribute :count, default: 1
+  
+  validate do
+    required(:product).filled(:str?)
+    optional(:count).maybe(:int?) 
+  end
+end
 ```
 
-And then execute:
+###Processing incoming hash
 
-    $ bundle
+You instantiate the input by executing `call` method which, depending on the validation resutls, returns an instance of Broi::Input::Success/Failure.
 
-Or install it yourself as:
+```ruby
+PurchaseInput.(product: 'Apple')
+#=> #Success(<#PurchaseInput|soft product=#Value('Apple')>)
 
-    $ gem install input
 
-## Usage
+PurchaseInput.(product: 123)
+#=> Failure({:product => ["must be string"])
+```
 
-TODO: Write usage instructions here
+### Soft input struct
 
-## Development
+Regardless of the validation result, you can always obtain soft input result by calling `input` on the result:
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```ruby
+PurchaseInput.(product: 'Apple').input
+#=> <#PurchaseInput|soft product=#Value('Apple')>
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+PurchaseInput.(product: 123).input
+#=> <#PurchaseInput|soft product=#InvalidValue(123)>
+```
 
-## Contributing
+All the values accessible through the soft input are either `Broi::Input::Value`/`InvalidValue` and they respond to `valid?` and `invalid?` methods.
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/input. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+### Strict input
 
-## License
+You can turn soft input into a strict input by calling `valid!`. Strict input is just typical Dry::Struct:
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+```ruby
+PurchaseInput.(product: 'Apple').input.valid!
+#=> <#PurchaseInput product='Apple'>
 
-## Code of Conduct
+PurchaseInput.(product: 123).input.valid!
+#! raises: Broi::Input::Invalid 
+```
 
-Everyone interacting in the Input project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/input/blob/master/CODE_OF_CONDUCT.md).
+### Validation errors
+
+Errors can be collected directly from the processing result.
+
+```ruby
+PurchaseInput.(product: 'Apple').errors
+#=> {}
+
+PurchaseInput.(product: 123).errors
+#=> {:product => ["must be string"])
+```
+
+

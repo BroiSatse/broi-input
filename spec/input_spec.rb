@@ -21,42 +21,64 @@ RSpec.describe Broi::Input do
   let(:input) { result.input }
   let(:errors) { result.errors }
 
-  describe 'Non-strict input' do
+  context 'with all the params' do
+    let(:params) { { name: 'Some name', count: 5 } }
 
-    context 'with all the params' do
-      let(:params) { { name: 'Some name', count: 5 } }
+    it { is_expected.to be_success }
 
-      it { is_expected.to be_success }
+    it 'assigns all the values' do
+      expect(input.name.value!).to eq params[:name]
+      expect(input.count.value!).to eq params[:count]
+    end
 
-      it 'assigns all the values' do
-        expect(input.name.value!).to eq params[:name]
-        expect(input.count.value!).to eq params[:count]
+    describe '#valid!' do
+      let(:strict_input) { input.valid! }
+
+      it 'returns values directly' do
+        expect(strict_input.name).to eq params[:name]
+        expect(strict_input.count).to eq params[:count]
+      end
+    end
+  end
+
+  context 'with all the params except for the optional ones' do
+    let(:params) { { name: 'Some name' } }
+
+    it { is_expected.to be_success }
+
+    it 'assigns all the values' do
+      expect(input.name.value!).to eq params[:name]
+      expect(input.count.value!).to eq default_count
+    end
+
+    describe '#valid!' do
+      let(:strict_input) { input.valid! }
+
+      it 'returns values directly' do
+        expect(strict_input.name).to eq params[:name]
+        expect(strict_input.count).to eq default_count
       end
     end
 
-    context 'with all the params except for the optional ones' do
-      let(:params) { { name: 'Some name' } }
+  end
 
-      it { is_expected.to be_success }
+  context 'with invalid params' do
+    let(:params) { { name: 'hello', count: 'world' } }
+    let(:errors) { result.errors }
 
-      it 'assigns all the values' do
-        expect(input.name.value!).to eq params[:name]
-        expect(input.count.value!).to eq default_count
-      end
+    it { is_expected.to be_failure }
+    it 'gives validation errors' do
+      expect(errors).to eq(count: ['must be an integer'])
     end
 
-    context 'with invalid params' do
-      let(:params) { { name: 'hello', count: 'world' } }
-      let(:errors) { result.errors }
+    it 'returns input object with invalid values' do
+      expect(input.name).to be_valid
+      expect(input.count).to be_invalid
+    end
 
-      it { is_expected.to be_failure }
-      it 'gives validation errors' do
-        expect(errors).to eq(count: ['must be an integer'])
-      end
+    describe '#valid!' do
+      it 'raises an exception' do
 
-      it 'returns input object with invalid values' do
-        expect(input.name).to be_valid
-        expect(input.count).to be_invalid
       end
     end
   end
