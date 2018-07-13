@@ -11,19 +11,20 @@ module Broi
         end
       end
 
-      def deep_merge(target, source)
+      def deep_merge(target, source, &block)
         if target.is_a?(Hash) && source.is_a?(Hash)
           keys = (target.keys + source.keys).uniq
           keys.map do |key|
             value = if [target, source].all? { |h| h.key? key }
-              deep_merge(target[key], source[key])
+              deep_merge(target[key], source[key], &block)
             else
               [target[key], source[key]].compact.first
             end
             [key, value]
           end.to_h
         else
-          source
+          block ||= ->(_target, source) { source }
+          block.(target, source)
         end
       end
     end

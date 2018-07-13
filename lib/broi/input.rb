@@ -5,6 +5,7 @@ require 'dry/monads/result'
 require 'broi/input/success'
 require 'broi/input/failure'
 require 'broi/input/utils'
+require 'broi/input/value'
 require 'broi/input/invalid_value'
 
 require 'byebug'
@@ -38,9 +39,13 @@ module Broi
       def call(params = {})
         result = validation.(params)
         output = input[result.output]
-        errors = Utils.deep_transform_values(result.errors) { InvalidValue.new }
-        input_with_errors = Utils.deep_merge(output, errors)
-        input = new(input_with_errors)
+        input = Utils.deep_merge(output, result.errors) do |target, _error|
+          InvalidValue.new(target)
+        end
+        input = Utils.deep_transform_values(input) do |value|
+          value.is_a?(InvalidValue) ? value : Value.new(value)
+        end
+        input = new(input)
         if result.success?
           Success.new(input)
         else

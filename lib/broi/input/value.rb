@@ -1,16 +1,16 @@
 module Broi
   class Input < Dry::Struct::Value
-    class InvalidValue < Dry::Monads::Failure
+    class Value < Dry::Monads::Success
       def inspect
-        "#InvalidValue(#{failure.inspect})"
+        "#Value(#{value!.inspect})"
       end
 
       def valid?
-        false
+        true
       end
 
       def invalid?
-        true
+        false
       end
     end
   end

@@ -18,38 +18,46 @@ RSpec.describe Broi::Input do
   let(:params) { {} }
   subject(:result) { input_class.(params) }
 
-  context 'with all the params' do
-    let(:params) { { name: 'Some name', count: 5 } }
-    let(:input) { result.value! }
+  let(:input) { result.input }
+  let(:errors) { result.errors }
 
-    it { is_expected.to be_success }
+  describe 'Non-strict input' do
 
-    it 'assigns all the values' do
-      expect(input.name).to eq params[:name]
-      expect(input.count).to eq params[:count]
+    context 'with all the params' do
+      let(:params) { { name: 'Some name', count: 5 } }
+
+      it { is_expected.to be_success }
+
+      it 'assigns all the values' do
+        expect(input.name.value!).to eq params[:name]
+        expect(input.count.value!).to eq params[:count]
+      end
     end
-  end
 
-  context 'with all the params except for the optional ones' do
-    let(:params) { { name: 'Some name' } }
-    let(:input) { result.value! }
+    context 'with all the params except for the optional ones' do
+      let(:params) { { name: 'Some name' } }
 
-    it { is_expected.to be_success }
+      it { is_expected.to be_success }
 
-    it 'assigns all the values' do
-      expect(input.name).to eq params[:name]
-      expect(input.count).to eq default_count
+      it 'assigns all the values' do
+        expect(input.name.value!).to eq params[:name]
+        expect(input.count.value!).to eq default_count
+      end
     end
-  end
 
-  context 'with invalid params' do
-    let(:params) { { name: '', count: 'hello' } }
-    let(:errors) { result.failure }
+    context 'with invalid params' do
+      let(:params) { { name: 'hello', count: 'world' } }
+      let(:errors) { result.errors }
 
+      it { is_expected.to be_failure }
+      it 'gives validation errors' do
+        expect(errors).to eq(count: ['must be an integer'])
+      end
 
-    it { is_expected.to be_failure }
-    it 'yields validation errors' do
-      expect(errors).to eq(name: ['must be filled'], count: ['must be an integer'])
+      it 'returns input object with invalid values' do
+        expect(input.name).to be_valid
+        expect(input.count).to be_invalid
+      end
     end
   end
 end
