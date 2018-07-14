@@ -4,12 +4,12 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = 'broi-input'
-  spec.version       = '0.1.1'
+  spec.version       = '0.1.2'
   spec.authors       = ['broisatse']
   spec.email         = ['sklajn@gmail.com']
 
   spec.summary       = 'Simple ruby object to handle user inputs'
-  spec.description   = %q{Destructure incoming user input onto dry struct}
+  spec.description   = 'Destructures incoming user input onto dry struct'
   spec.homepage      = 'https://github.com/BroiSatse/broi-input'
   spec.license       = 'MIT'
 
