@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    broi-input (0.1.1)
+    broi-input (0.1.2)
       dry-monads (~> 1.0)
       dry-struct (~> 0.5)
       dry-validation (~> 0.12)

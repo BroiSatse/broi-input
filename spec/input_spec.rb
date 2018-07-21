@@ -26,9 +26,13 @@ RSpec.describe Broi::Input do
 
     it { is_expected.to be_success }
 
-    it 'assigns all the values' do
+    it 'assigns all the valid values' do
       expect(input.name.value!).to eq params[:name]
       expect(input.count.value!).to eq params[:count]
+    end
+
+    it 'gives empty errors' do
+      expect(errors).to be_empty
     end
 
     describe '#valid!' do
@@ -64,11 +68,11 @@ RSpec.describe Broi::Input do
 
   context 'with invalid params' do
     let(:params) { { name: 'hello', count: 'world' } }
-    let(:errors) { result.errors }
 
     it { is_expected.to be_failure }
+
     it 'gives validation errors' do
-      expect(errors).to eq(count: ['must be an integer'])
+      expect(errors[:count]).to eq ['must be an integer']
     end
 
     it 'returns input object with invalid values' do
@@ -78,7 +82,7 @@ RSpec.describe Broi::Input do
 
     describe '#valid!' do
       it 'raises an exception' do
-
+        expect { input.valid! }.to raise_error Broi::Input::Invalid
       end
     end
   end

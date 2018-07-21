@@ -2,14 +2,13 @@ require 'dry-struct'
 require 'dry/validation'
 require 'dry/monads/result'
 
+require 'broi/errors'
 require 'broi/input/success'
 require 'broi/input/failure'
 require 'broi/input/utils'
 require 'broi/input/value'
 require 'broi/input/invalid_value'
 require 'broi/input/soft'
-
-require 'byebug'
 
 module Broi
   class Input < Dry::Struct::Value
@@ -43,18 +42,10 @@ module Broi
       def call(params = {})
         result = validation.(params)
         input = Soft.(self, result.output, result.errors)
-        # output = input[result.output]
-        # input = Utils.deep_merge(output, result.errors) do |target, _error|
-        #   InvalidValue.new(target)
-        # end
-        # input = Utils.deep_transform_values(input) do |value|
-        #   value.is_a?(InvalidValue) ? value : Value.new(value)
-        # end
-        # input = new(input)
         if result.success?
           Success.new(input)
         else
-          Failure.new(input, result.errors)
+          Failure.new(input, Errors.new(result.errors))
         end
       end
 

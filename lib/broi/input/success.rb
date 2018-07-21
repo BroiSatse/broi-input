@@ -6,7 +6,7 @@ module Broi
       end
 
       def errors
-        {}
+        Errors.new({})
       end
     end
   end
