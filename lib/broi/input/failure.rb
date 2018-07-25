@@ -1,5 +1,5 @@
 module Broi
-  class Input < Dry::Struct::Value
+  class Input
     class Failure < Dry::Monads::Failure
       def initialize(input, errors)
         @input = input

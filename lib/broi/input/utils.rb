@@ -1,5 +1,5 @@
 module Broi
-  class Input < Dry::Struct::Value
+  class Input
     module Utils
       extend self
 

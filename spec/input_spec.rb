@@ -1,89 +1,62 @@
 RSpec.describe Broi::Input do
   let(:input_class) do
-    default_count = self.default_count
-
     Class.new(described_class) do
-      attribute :name
-      attribute :count, default: default_count
+      attribute :id
+      attribute :attrs do
+        attribute :name
+        attribute :level, default: 0
+      end
 
       validate do
-        required(:name).filled
-        optional(:count).maybe(:int?)
+        required(:id).filled(:int?)
+        required(:attrs).schema do
+          required(:name).filled(:str?)
+          optional(:level).filled(:int?)
+        end
       end
     end
   end
 
-  let(:default_count) { rand(1..10) }
-
   let(:params) { {} }
   subject(:result) { input_class.(params) }
-
-  let(:input) { result.input }
+  let(:struct) { result.struct }
   let(:errors) { result.errors }
 
-  context 'with all the params' do
-    let(:params) { { name: 'Some name', count: 5 } }
+  context 'with all valid params' do
+    let(:params) { { id: 3, attrs: { name: 'Hello', level: 2 } } }
 
-    it { is_expected.to be_success }
+    it { is_expected.to be_valid }
 
     it 'assigns all the valid values' do
-      expect(input.name.value!).to eq params[:name]
-      expect(input.count.value!).to eq params[:count]
+      expect(struct.id).to eq params[:id]
+      expect(struct.attrs.name).to eq params[:attrs][:name]
+      expect(struct.attrs.level).to eq params[:attrs][:level]
     end
 
     it 'gives empty errors' do
       expect(errors).to be_empty
     end
-
-    describe '#valid!' do
-      let(:strict_input) { input.valid! }
-
-      it 'returns values directly' do
-        expect(strict_input.name).to eq params[:name]
-        expect(strict_input.count).to eq params[:count]
-      end
-    end
   end
 
   context 'with all the params except for the optional ones' do
-    let(:params) { { name: 'Some name' } }
+    let(:params) { { id: 3, attrs: { name: 'Hello' } } }
 
-    it { is_expected.to be_success }
+    it { is_expected.to be_valid }
 
-    it 'assigns all the values' do
-      expect(input.name.value!).to eq params[:name]
-      expect(input.count.value!).to eq default_count
+    it 'uses the default value' do
+      expect(struct.attrs.level).to eq 0
     end
-
-    describe '#valid!' do
-      let(:strict_input) { input.valid! }
-
-      it 'returns values directly' do
-        expect(strict_input.name).to eq params[:name]
-        expect(strict_input.count).to eq default_count
-      end
-    end
-
   end
 
-  context 'with invalid params' do
-    let(:params) { { name: 'hello', count: 'world' } }
-
-    it { is_expected.to be_failure }
-
-    it 'gives validation errors' do
-      expect(errors[:count]).to eq ['must be an integer']
+  describe 'invalid input' do
+    context 'when required value key is missing' do
+      let(:params) { { attrs: { name: 'Hello' } } }
     end
 
-    it 'returns input object with invalid values' do
-      expect(input.name).to be_valid
-      expect(input.count).to be_invalid
-    end
+    it { is_expected.not_to be_valid }
 
-    describe '#valid!' do
-      it 'raises an exception' do
-        expect { input.valid! }.to raise_error Broi::Input::Invalid
-      end
+    it 'sets validation message' do
+      expect(errors[:id]).to eq ['is missing']
     end
   end
 end

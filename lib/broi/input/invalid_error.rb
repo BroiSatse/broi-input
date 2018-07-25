@@ -1,5 +1,5 @@
 module Broi
-  class Input < Dry::Struct::Value
+  class Input
     Invalid = Class.new(StandardError)
   end
 end

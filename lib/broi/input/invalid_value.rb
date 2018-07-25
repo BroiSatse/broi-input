@@ -1,5 +1,5 @@
 module Broi
-  class Input < Dry::Struct::Value
+  class Input
     class InvalidValue < Dry::Monads::Failure
       def inspect
         "#InvalidValue(#{failure.inspect})"

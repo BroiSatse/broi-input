@@ -6,9 +6,15 @@ require 'pry'
 
 class MyInput < Broi::Input
   attribute :a
+  attribute :b do
+    attribute :c
+  end
 
   validate do
     required(:a).maybe(:int?)
+    required(:b).schema do
+      required(:c).filled(:int?)
+    end
   end
 end
 

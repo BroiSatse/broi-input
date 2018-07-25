@@ -9,54 +9,54 @@ require 'broi/input/utils'
 require 'broi/input/value'
 require 'broi/input/invalid_value'
 require 'broi/input/soft'
+require 'broi/input/struct'
 
 module Broi
-  class Input < Dry::Struct::Value
+  class Input
 
     module Types
       include Dry::Types.module
     end
 
-    transform_keys(&:to_sym)
+    def initialize(params = {})
+      result = self.class.schema.(params)
+      @valid = result.success?
+      @struct = self.class.struct.build(result.output)
+      @errors = Errors.new result.errors
+    end
 
-    def strict?
-      true
+    attr_reader :errors, :struct
+
+    def valid?
+      @valid
+    end
+
+    def [](key)
+      key, nested = key.to_s.split('.', 2)
+      return unless (result = super(key.to_sym))
+      result = result[nested] if nested
+      result
     end
 
     class << self
-
-      def attribute(name, **opts, &block)
-        type = Types::Any.optional.meta(omittable: true)
-        type = type.default(opts[:default]) if opts.has_key?(:default)
-        super(name, type, &block)
+      def attribute(*args, &block)
+        struct.attribute(*args, &block)
       end
 
       def validate(&block)
-        @validation = Dry::Validation::Schema(&block)
-      end
-
-      def validation
-        @validation ||= Dry::Validation.Schema {}
+        @schema = Dry::Validation::Schema(&block)
       end
 
       def call(params = {})
-        result = validation.(params)
-        input = Soft.(self, result.output, result.errors)
-        if result.success?
-          Success.new(input)
-        else
-          Failure.new(input, Errors.new(result.errors))
-        end
+        new(params)
       end
 
-      private
+      def schema
+        @schema ||= Dry::Validation.Schema {}
+      end
 
-      def merge_error(input_value, error)
-        if input_value.is_a? Hash
-
-        else
-          error ? InvalidValue.new : input_value
-        end
+      def struct
+        @struct ||= Broi::Input::Struct.root_for(self)
       end
     end
   end

@@ -1,5 +1,5 @@
 module Broi
-  class Input < Dry::Struct::Value
+  class Input
     class Value < Dry::Monads::Success
       def inspect
         "#Value(#{value!.inspect})"

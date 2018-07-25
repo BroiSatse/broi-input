@@ -1,7 +1,8 @@
 require 'broi/input/invalid_error'
+require 'byebug'
 
 module Broi
-  class Input < Dry::Struct::Value
+  class Input
     module SoftInput
       def self.included(mod)
         mod.extend ClassMethods
@@ -17,6 +18,9 @@ module Broi
         false
       end
 
+      def with_valid(*keys, &block)
+      end
+
       module ClassMethods
         def inspect
           "#{superclass.name}|soft"
@@ -30,6 +34,18 @@ module Broi
           register[klass]
         end
 
+        def call(input_class, attrs, errors)
+          attrs = input_class.input[attrs]
+          input = Utils.deep_merge(attrs, errors) do |target, error|
+            next self.(target.class, target, error) if target.is_a?(Broi::Input)
+            InvalidValue.new(wrap_value(target).value!)
+          end
+          input = Utils.deep_transform_values(input) do |value|
+            wrap_value(value)
+          end
+          self[input_class].new(input)
+        end
+
         private
 
         def register
@@ -37,17 +53,11 @@ module Broi
             hash[klass] = Class.new(klass).include(SoftInput)
           end
         end
-      end
 
-      def self.call(input_class, attrs, errors)
-        attrs = input_class.input[attrs]
-        input = Utils.deep_merge(attrs, errors) do |target, _error|
-          InvalidValue.new(target)
+        def wrap_value(value)
+          return value if [Broi::Input, Value, InvalidValue].any? { |klass| value.is_a? klass}
+          Value.new(value)
         end
-        input = Utils.deep_transform_values(input) do |value|
-          value.is_a?(InvalidValue) ? value : Value.new(value)
-        end
-        self[input_class].new(input)
       end
     end
   end
